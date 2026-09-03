@@ -1,4 +1,4 @@
-import { COLD_ZONES, type Item } from "./types";
+import type { Item } from "./types";
 
 export type ExpiryStatus = "none" | "ok" | "soon" | "expired";
 
@@ -19,7 +19,6 @@ function startOfDay(date: Date): Date {
 }
 
 export function isLowStock(item: Item): boolean {
-  if (COLD_ZONES.includes(item.zone)) return false;
   if (item.ignore_low_stock) return false;
   if (item.min_stock == null) return false;
   return item.amount <= item.min_stock;

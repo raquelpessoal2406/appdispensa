@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Sheet } from "@/components/Sheet";
 import { formatAmount, clampAmount, QUICK_SUBTRACT } from "@/lib/amount";
-import { COLD_ZONES, type Item } from "@/lib/types";
+import type { Item } from "@/lib/types";
 import { createItem, deleteItem, updateItem, type ItemInput } from "./actions";
 
 export function ItemSheet({
@@ -29,8 +29,6 @@ export function ItemSheet({
   const [ignoreLowStock, setIgnoreLowStock] = useState(item?.ignore_low_stock ?? false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-
-  const isCold = COLD_ZONES.includes(zone);
 
   function reset() {
     setName(item?.name ?? "");
@@ -62,7 +60,7 @@ export function ItemSheet({
       unit: unit.trim() || null,
       expiry: expiry || null,
       alert_days: expiry ? alertDays : null,
-      min_stock: !isCold && minStock !== "" ? Number(minStock) : null,
+      min_stock: minStock !== "" ? Number(minStock) : null,
       ignore_low_stock: ignoreLowStock,
     };
 
@@ -174,29 +172,25 @@ export function ItemSheet({
           )}
         </div>
 
-        {!isCold && (
-          <>
-            <Field label="Avisar quando restar (ou menos) — opcional">
-              <input
-                type="number"
-                min={0}
-                step="any"
-                value={minStock}
-                onChange={(e) => setMinStock(e.target.value)}
-                className="input"
-                placeholder="Ex: 1"
-              />
-            </Field>
-            <label className="flex items-center gap-2 text-[13.5px] text-ink-soft">
-              <input
-                type="checkbox"
-                checked={ignoreLowStock}
-                onChange={(e) => setIgnoreLowStock(e.target.checked)}
-              />
-              Ignorar aviso de stock baixo para este item
-            </label>
-          </>
-        )}
+        <Field label="Avisar quando restar (ou menos) — opcional">
+          <input
+            type="number"
+            min={0}
+            step="any"
+            value={minStock}
+            onChange={(e) => setMinStock(e.target.value)}
+            className="input"
+            placeholder="Ex: 1"
+          />
+        </Field>
+        <label className="flex items-center gap-2 text-[13.5px] text-ink-soft">
+          <input
+            type="checkbox"
+            checked={ignoreLowStock}
+            onChange={(e) => setIgnoreLowStock(e.target.checked)}
+          />
+          Ignorar aviso de stock baixo para este item
+        </label>
 
         {error && <p className="text-sm font-medium text-danger">{error}</p>}
 

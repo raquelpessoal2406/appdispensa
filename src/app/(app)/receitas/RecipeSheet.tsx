@@ -9,10 +9,12 @@ export function RecipeSheet({
   open,
   onClose,
   recipe,
+  knownIngredientNames,
 }: {
   open: boolean;
   onClose: () => void;
   recipe: Recipe | null;
+  knownIngredientNames: string[];
 }) {
   const [name, setName] = useState(recipe?.name ?? "");
   const [prepMinutes, setPrepMinutes] = useState(
@@ -93,6 +95,11 @@ export function RecipeSheet({
 
   return (
     <Sheet open={open} onClose={handleClose} title={recipe ? "Editar receita" : "Nova receita"}>
+      <datalist id="known-ingredient-names">
+        {knownIngredientNames.map((n) => (
+          <option key={n} value={n} />
+        ))}
+      </datalist>
       <div className="flex flex-col gap-3.5">
         <Field label="Nome">
           <input value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="Ex: Esparguete à bolonhesa" />
@@ -146,6 +153,7 @@ export function RecipeSheet({
                   value={ing.name}
                   onChange={(e) => updateIngredient(index, "name", e.target.value)}
                   placeholder="Ingrediente"
+                  list="known-ingredient-names"
                   className="input flex-1"
                 />
                 <input

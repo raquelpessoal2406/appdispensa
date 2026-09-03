@@ -64,5 +64,3 @@ export type CheckedIngredient = {
   ingredient_name: string;
   checked: boolean;
 };
-
-export const COLD_ZONES = ["Frigorífico", "Congelador"];

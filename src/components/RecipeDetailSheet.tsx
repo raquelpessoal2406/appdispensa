@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Sheet } from "@/components/Sheet";
-import { isIngredientInStock } from "@/lib/ingredientMatch";
+import { addManualItem } from "@/app/(app)/compras/actions";
+import { formatAmount } from "@/lib/amount";
+import { findItemByName } from "@/lib/ingredientMatch";
 import type { Item, Recipe } from "@/lib/types";
 
 export function RecipeDetailSheet({
@@ -19,7 +22,14 @@ export function RecipeDetailSheet({
   onEdit?: () => void;
   onDelete?: () => void;
 }) {
+  const [addedNames, setAddedNames] = useState<Set<string>>(new Set());
+
   if (!recipe) return null;
+
+  async function handleAddToShoppingList(name: string) {
+    setAddedNames((prev) => new Set(prev).add(name));
+    await addManualItem(name);
+  }
 
   return (
     <Sheet open={open} onClose={onClose} title={recipe.name}>
@@ -36,13 +46,35 @@ export function RecipeDetailSheet({
       </div>
 
       <p className="mb-1.5 text-[13px] font-extrabold">Ingredientes</p>
-      <ul className="mb-4 list-disc pl-[18px] text-[14px] leading-[1.7]">
+      <ul className="mb-4 flex flex-col gap-2">
         {recipe.ingredients.map((ing, i) => {
-          const have = isIngredientInStock(items, ing.name);
+          const stockItem = findItemByName(items, ing.name);
+          const have = !!stockItem && stockItem.amount > 0;
+          const added = addedNames.has(ing.name);
+
           return (
-            <li key={i} className={have ? "text-ink" : "text-danger"}>
-              {ing.name}
-              {ing.qty ? ` — ${ing.qty}` : ""}
+            <li key={i} className="flex items-center justify-between gap-2.5">
+              <div className={`text-[14px] ${have ? "text-ink" : "text-danger"}`}>
+                <div className="font-semibold">
+                  {ing.name}
+                  {ing.qty ? ` — ${ing.qty}` : ""}
+                </div>
+                <div className="text-[12px] text-ink-soft">
+                  {stockItem
+                    ? `Tens: ${formatAmount(stockItem.amount)}${stockItem.unit ? ` ${stockItem.unit}` : ""}`
+                    : "Não tens este ingrediente"}
+                </div>
+              </div>
+              {!have && (
+                <button
+                  type="button"
+                  disabled={added}
+                  onClick={() => handleAddToShoppingList(ing.name)}
+                  className="flex-shrink-0 rounded-full border border-line bg-surface-2 px-3 py-1.5 text-[12px] font-semibold text-ink disabled:opacity-60"
+                >
+                  {added ? "Adicionado ✓" : "+ Lista de compras"}
+                </button>
+              )}
             </li>
           );
         })}
