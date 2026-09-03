@@ -1,8 +1,13 @@
-export default function ReceitasPage() {
-  return (
-    <>
-      <h2 className="mb-3.5 mt-0.5 text-lg font-extrabold">Receitas</h2>
-      <p className="text-sm text-ink-soft">Em construção.</p>
-    </>
-  );
+import { createClient } from "@/lib/supabase/server";
+import { ReceitasClient } from "./ReceitasClient";
+
+export default async function ReceitasPage() {
+  const supabase = await createClient();
+
+  const [{ data: recipes }, { data: items }] = await Promise.all([
+    supabase.from("recipes").select("*"),
+    supabase.from("items").select("*"),
+  ]);
+
+  return <ReceitasClient initialRecipes={recipes ?? []} items={items ?? []} />;
 }

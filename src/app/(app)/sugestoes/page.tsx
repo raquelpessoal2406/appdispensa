@@ -1,8 +1,13 @@
-export default function SugestoesPage() {
-  return (
-    <>
-      <h2 className="mb-3.5 mt-0.5 text-lg font-extrabold">Sugestões</h2>
-      <p className="text-sm text-ink-soft">Em construção.</p>
-    </>
-  );
+import { createClient } from "@/lib/supabase/server";
+import { SugestoesClient } from "./SugestoesClient";
+
+export default async function SugestoesPage() {
+  const supabase = await createClient();
+
+  const [{ data: recipes }, { data: items }] = await Promise.all([
+    supabase.from("recipes").select("*"),
+    supabase.from("items").select("*"),
+  ]);
+
+  return <SugestoesClient recipes={recipes ?? []} items={items ?? []} />;
 }

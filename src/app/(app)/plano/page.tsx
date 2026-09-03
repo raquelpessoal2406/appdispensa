@@ -1,8 +1,27 @@
-export default function PlanoPage() {
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentWeekDates } from "@/lib/week";
+import { PlanoClient } from "./PlanoClient";
+
+export default async function PlanoPage() {
+  const supabase = await createClient();
+  const weekDays = getCurrentWeekDates();
+
+  const [{ data: plan }, { data: recipes }, { data: items }] = await Promise.all([
+    supabase
+      .from("weekly_plan")
+      .select("*")
+      .gte("date", weekDays[0].date)
+      .lte("date", weekDays[6].date),
+    supabase.from("recipes").select("*"),
+    supabase.from("items").select("*"),
+  ]);
+
   return (
-    <>
-      <h2 className="mb-3.5 mt-0.5 text-lg font-extrabold">Plano da semana</h2>
-      <p className="text-sm text-ink-soft">Em construção.</p>
-    </>
+    <PlanoClient
+      weekDays={weekDays}
+      initialPlan={plan ?? []}
+      recipes={recipes ?? []}
+      items={items ?? []}
+    />
   );
 }

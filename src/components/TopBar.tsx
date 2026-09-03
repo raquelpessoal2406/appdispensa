@@ -1,6 +1,6 @@
 import { logout } from "@/app/(app)/actions";
 
-export function TopBar({ title }: { title: string }) {
+export function TopBar({ title, alertCount = 0 }: { title: string; alertCount?: number }) {
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between bg-primary px-[18px] pb-3.5 pt-[calc(16px+env(safe-area-inset-top,0px))] text-white shadow-[0_2px_10px_rgba(0,0,0,0.12)]">
       <h1 className="m-0 text-xl font-extrabold tracking-tight">{title}</h1>
@@ -23,6 +23,11 @@ export function TopBar({ title }: { title: string }) {
             <path d="M18 8a6 6 0 1 0-12 0c0 3.2-1 4.6-2 6h16c-1-1.4-2-2.8-2-6" />
             <path d="M9.5 20a2.5 2.5 0 0 0 5 0" />
           </svg>
+          {alertCount > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-primary bg-danger px-[3px] text-[10.5px] font-extrabold text-white">
+              {alertCount}
+            </span>
+          )}
         </button>
         <form action={logout}>
           <button

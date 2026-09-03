@@ -1,10 +1,18 @@
-export default function InventarioPage() {
+import { createClient } from "@/lib/supabase/server";
+import { InventarioClient } from "./InventarioClient";
+
+export default async function InventarioPage() {
+  const supabase = await createClient();
+
+  const [{ data: zones }, { data: items }] = await Promise.all([
+    supabase.from("zones").select("*").order("created_at", { ascending: true }),
+    supabase.from("items").select("*"),
+  ]);
+
   return (
-    <>
-      <h2 className="mb-3.5 mt-0.5 text-lg font-extrabold">Inventário</h2>
-      <p className="text-sm text-ink-soft">
-        Em construção — a seguir vamos ligar isto ao Supabase.
-      </p>
-    </>
+    <InventarioClient
+      initialItems={items ?? []}
+      initialZones={(zones ?? []).map((z) => z.name)}
+    />
   );
 }
