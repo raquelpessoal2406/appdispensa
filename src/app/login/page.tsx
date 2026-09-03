@@ -9,7 +9,7 @@ export default function LoginPage() {
   return (
     <main className="flex flex-1 flex-col justify-center px-6 py-10">
       <h1 className="mb-1 text-2xl font-extrabold tracking-tight text-primary">
-        Despensa
+        Casa
       </h1>
       <p className="mb-8 text-sm text-ink-soft">
         Entra com a tua conta para gerires a despensa.

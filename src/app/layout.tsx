@@ -9,8 +9,13 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Despensa",
+  title: "Casa",
   description: "Gestão pessoal de despensa e cozinha",
+  appleWebApp: {
+    title: "Casa",
+    capable: true,
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {

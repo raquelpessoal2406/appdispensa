@@ -10,7 +10,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <>
-      <TopBar title="Despensa" alertCount={alertCount} />
+      <TopBar title="Casa" alertCount={alertCount} />
       <main className="flex-1 overflow-y-auto px-4 pb-[calc(96px+env(safe-area-inset-bottom,0px))] pt-4">
         {children}
       </main>
