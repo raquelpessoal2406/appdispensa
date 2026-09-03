@@ -121,6 +121,7 @@ export function ReceitasClient({
       </button>
 
       <RecipeDetailSheet
+        key={viewing?.id ?? "closed"}
         open={viewing !== null}
         onClose={() => setViewing(null)}
         recipe={viewing}
@@ -130,6 +131,7 @@ export function ReceitasClient({
       />
 
       <RecipeSheet
+        key={editing === "new" ? "new" : (editing?.id ?? "closed")}
         open={editing !== null}
         onClose={() => setEditing(null)}
         recipe={editing === "new" || editing === null ? null : editing}

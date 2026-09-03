@@ -11,12 +11,16 @@ export function ItemSheet({
   onClose,
   zones,
   knownCategories,
+  knownItemNames,
+  knownUnits,
   item,
 }: {
   open: boolean;
   onClose: () => void;
   zones: string[];
   knownCategories: string[];
+  knownItemNames: string[];
+  knownUnits: string[];
   item: Item | null;
 }) {
   const [name, setName] = useState(item?.name ?? "");
@@ -98,9 +102,15 @@ export function ItemSheet({
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
+            list="known-item-names"
             className="input"
             placeholder="Ex: Leite"
           />
+          <datalist id="known-item-names">
+            {knownItemNames.map((n) => (
+              <option key={n} value={n} />
+            ))}
+          </datalist>
         </Field>
 
         <Field label="Zona">
@@ -165,9 +175,15 @@ export function ItemSheet({
           <input
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
+            list="known-units"
             className="input"
             placeholder="Ex: L, pacote, un."
           />
+          <datalist id="known-units">
+            {knownUnits.map((u) => (
+              <option key={u} value={u} />
+            ))}
+          </datalist>
         </Field>
 
         <div className="flex gap-2.5">

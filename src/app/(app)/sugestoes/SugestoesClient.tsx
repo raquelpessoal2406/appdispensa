@@ -46,6 +46,7 @@ export function SugestoesClient({ recipes, items }: { recipes: Recipe[]; items: 
       )}
 
       <RecipeDetailSheet
+        key={viewing?.id ?? "closed"}
         open={viewing !== null}
         onClose={() => setViewing(null)}
         recipe={viewing}

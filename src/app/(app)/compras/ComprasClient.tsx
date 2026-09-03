@@ -195,9 +195,17 @@ export function ComprasClient({
           value={manualInput}
           onChange={(e) => setManualInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAddManual()}
+          list="known-item-names-compras"
           placeholder="Adicionar item (ex: papel higiénico)"
           className="input flex-1"
         />
+        <datalist id="known-item-names-compras">
+          {Array.from(new Set(items.map((i) => i.name)))
+            .sort((a, b) => a.localeCompare(b, "pt"))
+            .map((n) => (
+              <option key={n} value={n} />
+            ))}
+        </datalist>
         <button type="button" onClick={handleAddManual} className="btn btn-primary">
           +
         </button>

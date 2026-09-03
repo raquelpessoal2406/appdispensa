@@ -48,6 +48,20 @@ export function InventarioClient({
     return Array.from(names).sort((a, b) => a.localeCompare(b, "pt"));
   }, [initialItems]);
 
+  const knownItemNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const item of initialItems) names.add(item.name);
+    return Array.from(names).sort((a, b) => a.localeCompare(b, "pt"));
+  }, [initialItems]);
+
+  const knownUnits = useMemo(() => {
+    const units = new Set<string>();
+    for (const item of initialItems) {
+      if (item.unit) units.add(item.unit);
+    }
+    return Array.from(units).sort((a, b) => a.localeCompare(b, "pt"));
+  }, [initialItems]);
+
   const filteredItems = useMemo(() => {
     const query = normalizeName(search);
     return itemsInZone.filter((item) => {
@@ -81,14 +95,8 @@ export function InventarioClient({
     <>
       <h2 className="mb-3.5 mt-0.5 text-lg font-extrabold">Inventário</h2>
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Pesquisar ingrediente…"
-        className="input mb-3"
-      />
-
-      <div className="mb-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <p className="mb-1.5 text-[12px] font-bold uppercase tracking-wide text-ink-soft">Zona</p>
+      <div className="mb-3.5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <button
           className={`chip ${activeZone === "Todos" ? "active" : ""}`}
           onClick={() => selectZone("Todos")}
@@ -125,25 +133,28 @@ export function InventarioClient({
         )}
       </div>
 
-      {categories.length > 0 && (
-        <div className="mb-3.5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <button
-            className={`chip ${activeCategory === "Todas" ? "active" : ""}`}
-            onClick={() => setActiveCategory("Todas")}
+      <div className="mb-3.5 flex gap-2">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Pesquisar ingrediente…"
+          className="input flex-1"
+        />
+        {categories.length > 0 && (
+          <select
+            value={activeCategory}
+            onChange={(e) => setActiveCategory(e.target.value)}
+            className="input !w-auto flex-shrink-0"
           >
-            Todas categorias
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              className={`chip ${activeCategory === cat ? "active" : ""}`}
-              onClick={() => setActiveCategory(cat)}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      )}
+            <option value="Todas">Todas categorias</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
 
       {zoneGroups.length === 0 && (
         <div className="empty">
@@ -170,10 +181,13 @@ export function InventarioClient({
       </button>
 
       <ItemSheet
+        key={editingItem === "new" ? "new" : (editingItem?.id ?? "closed")}
         open={editingItem !== null}
         onClose={() => setEditingItem(null)}
         zones={initialZones}
         knownCategories={knownCategories}
+        knownItemNames={knownItemNames}
+        knownUnits={knownUnits}
         item={editingItem === "new" || editingItem === null ? null : editingItem}
       />
     </>
