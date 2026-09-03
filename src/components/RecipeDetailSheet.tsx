@@ -65,16 +65,14 @@ export function RecipeDetailSheet({
                     : "Não tens este ingrediente"}
                 </div>
               </div>
-              {!have && (
-                <button
-                  type="button"
-                  disabled={added}
-                  onClick={() => handleAddToShoppingList(ing.name)}
-                  className="flex-shrink-0 rounded-full border border-line bg-surface-2 px-3 py-1.5 text-[12px] font-semibold text-ink disabled:opacity-60"
-                >
-                  {added ? "Adicionado ✓" : "+ Lista de compras"}
-                </button>
-              )}
+              <button
+                type="button"
+                disabled={added}
+                onClick={() => handleAddToShoppingList(ing.name)}
+                className="flex-shrink-0 rounded-full border border-line bg-surface-2 px-3 py-1.5 text-[12px] font-semibold text-ink disabled:opacity-60"
+              >
+                {added ? "Adicionado ✓" : "+ Lista de compras"}
+              </button>
             </li>
           );
         })}
