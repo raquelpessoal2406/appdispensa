@@ -12,7 +12,7 @@ export default async function InventarioPage() {
   return (
     <InventarioClient
       initialItems={items ?? []}
-      initialZones={(zones ?? []).map((z) => z.name)}
+      initialZones={Array.from(new Set((zones ?? []).map((z) => z.name)))}
     />
   );
 }

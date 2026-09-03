@@ -10,6 +10,7 @@ export type Item = {
   user_id: string;
   name: string;
   zone: string;
+  category: string | null;
   amount: number;
   unit: string | null;
   expiry: string | null;

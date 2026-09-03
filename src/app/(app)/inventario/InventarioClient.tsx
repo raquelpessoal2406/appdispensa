@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { formatAmount } from "@/lib/amount";
 import { getExpiryStatus, isLowStock } from "@/lib/alerts";
+import { normalizeName } from "@/lib/ingredientMatch";
 import type { Item } from "@/lib/types";
 import { createZone } from "./actions";
 import { ItemSheet } from "./ItemSheet";
@@ -15,21 +16,58 @@ export function InventarioClient({
   initialZones: string[];
 }) {
   const [activeZone, setActiveZone] = useState<string>("Todos");
+  const [activeCategory, setActiveCategory] = useState<string>("Todas");
+  const [search, setSearch] = useState("");
   const [editingItem, setEditingItem] = useState<Item | null | "new">(null);
   const [addingZone, setAddingZone] = useState(false);
   const [newZoneName, setNewZoneName] = useState("");
+
+  function selectZone(zone: string) {
+    setActiveZone(zone);
+    setActiveCategory("Todas");
+  }
+
+  const itemsInZone = useMemo(
+    () => (activeZone === "Todos" ? initialItems : initialItems.filter((i) => i.zone === activeZone)),
+    [activeZone, initialItems],
+  );
+
+  const categories = useMemo(() => {
+    const names = new Set<string>();
+    for (const item of itemsInZone) {
+      if (item.category) names.add(item.category);
+    }
+    return Array.from(names).sort((a, b) => a.localeCompare(b, "pt"));
+  }, [itemsInZone]);
+
+  const knownCategories = useMemo(() => {
+    const names = new Set<string>();
+    for (const item of initialItems) {
+      if (item.category) names.add(item.category);
+    }
+    return Array.from(names).sort((a, b) => a.localeCompare(b, "pt"));
+  }, [initialItems]);
+
+  const filteredItems = useMemo(() => {
+    const query = normalizeName(search);
+    return itemsInZone.filter((item) => {
+      if (activeCategory !== "Todas" && item.category !== activeCategory) return false;
+      if (query && !normalizeName(item.name).includes(query)) return false;
+      return true;
+    });
+  }, [itemsInZone, activeCategory, search]);
 
   const zoneGroups = useMemo(() => {
     const zonesToShow = activeZone === "Todos" ? initialZones : [activeZone];
     return zonesToShow
       .map((zone) => ({
         zone,
-        items: initialItems
+        items: filteredItems
           .filter((i) => i.zone === zone)
           .sort((a, b) => a.name.localeCompare(b.name, "pt")),
       }))
       .filter((g) => g.items.length > 0);
-  }, [activeZone, initialItems, initialZones]);
+  }, [activeZone, filteredItems, initialZones]);
 
   async function handleAddZone() {
     const name = newZoneName.trim();
@@ -43,10 +81,17 @@ export function InventarioClient({
     <>
       <h2 className="mb-3.5 mt-0.5 text-lg font-extrabold">Inventário</h2>
 
-      <div className="mb-3.5 -mb-1 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Pesquisar ingrediente…"
+        className="input mb-3"
+      />
+
+      <div className="mb-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <button
           className={`chip ${activeZone === "Todos" ? "active" : ""}`}
-          onClick={() => setActiveZone("Todos")}
+          onClick={() => selectZone("Todos")}
         >
           Todos
         </button>
@@ -54,7 +99,7 @@ export function InventarioClient({
           <button
             key={zone}
             className={`chip ${activeZone === zone ? "active" : ""}`}
-            onClick={() => setActiveZone(zone)}
+            onClick={() => selectZone(zone)}
           >
             {zone}
           </button>
@@ -80,10 +125,30 @@ export function InventarioClient({
         )}
       </div>
 
+      {categories.length > 0 && (
+        <div className="mb-3.5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+            className={`chip ${activeCategory === "Todas" ? "active" : ""}`}
+            onClick={() => setActiveCategory("Todas")}
+          >
+            Todas categorias
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              className={`chip ${activeCategory === cat ? "active" : ""}`}
+              onClick={() => setActiveCategory(cat)}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
+
       {zoneGroups.length === 0 && (
         <div className="empty">
           <div className="big">🗄️</div>
-          <p>Ainda não tens itens {activeZone !== "Todos" ? `em ${activeZone}` : "no inventário"}.</p>
+          <p>Não há itens que correspondam à pesquisa/filtro.</p>
         </div>
       )}
 
@@ -108,6 +173,7 @@ export function InventarioClient({
         open={editingItem !== null}
         onClose={() => setEditingItem(null)}
         zones={initialZones}
+        knownCategories={knownCategories}
         item={editingItem === "new" || editingItem === null ? null : editingItem}
       />
     </>
@@ -124,6 +190,7 @@ function ItemRow({ item, onClick }: { item: Item; onClick: () => void }) {
         <div className="min-w-0 flex-1">
           <div className="mb-0.5 truncate text-[15px] font-bold">{item.name}</div>
           <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-ink-soft">
+            {item.category && <span>{item.category}</span>}
             {item.unit && <span>{item.unit}</span>}
             {expiryStatus === "soon" && <span className="tag tag-soon">A expirar em breve</span>}
             {expiryStatus === "expired" && <span className="tag tag-expired">Validade passada</span>}

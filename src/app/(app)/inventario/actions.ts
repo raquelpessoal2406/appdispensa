@@ -12,6 +12,7 @@ function revalidateAll() {
 export type ItemInput = {
   name: string;
   zone: string;
+  category: string | null;
   amount: number;
   unit: string | null;
   expiry: string | null;

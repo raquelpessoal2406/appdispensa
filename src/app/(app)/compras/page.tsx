@@ -23,7 +23,7 @@ export default async function ComprasPage() {
   return (
     <ComprasClient
       items={items ?? []}
-      zones={(zones ?? []).map((z) => z.name)}
+      zones={Array.from(new Set((zones ?? []).map((z) => z.name)))}
       planRows={planRows ?? []}
       recipes={recipes ?? []}
       manualItems={manualItems ?? []}

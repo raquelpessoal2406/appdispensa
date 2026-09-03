@@ -81,7 +81,7 @@ export async function setIngredientChecked(ingredientName: string, checked: bool
     .from("shopping_checked_ingredients")
     .upsert(
       { user_id: userId, ingredient_name: ingredientName, checked },
-      { onConflict: "user_id,ingredient_name" },
+      { onConflict: "ingredient_name" },
     );
   if (error) throw new Error(error.message);
   revalidateAll();

@@ -10,15 +10,18 @@ export function ItemSheet({
   open,
   onClose,
   zones,
+  knownCategories,
   item,
 }: {
   open: boolean;
   onClose: () => void;
   zones: string[];
+  knownCategories: string[];
   item: Item | null;
 }) {
   const [name, setName] = useState(item?.name ?? "");
   const [zone, setZone] = useState(item?.zone ?? zones[0] ?? "");
+  const [category, setCategory] = useState(item?.category ?? "");
   const [amount, setAmount] = useState(item?.amount ?? 1);
   const [unit, setUnit] = useState(item?.unit ?? "");
   const [expiry, setExpiry] = useState(item?.expiry ?? "");
@@ -33,6 +36,7 @@ export function ItemSheet({
   function reset() {
     setName(item?.name ?? "");
     setZone(item?.zone ?? zones[0] ?? "");
+    setCategory(item?.category ?? "");
     setAmount(item?.amount ?? 1);
     setUnit(item?.unit ?? "");
     setExpiry(item?.expiry ?? "");
@@ -56,6 +60,7 @@ export function ItemSheet({
     const input: ItemInput = {
       name: name.trim(),
       zone,
+      category: category.trim() || null,
       amount: clampAmount(amount),
       unit: unit.trim() || null,
       expiry: expiry || null,
@@ -106,6 +111,21 @@ export function ItemSheet({
               </option>
             ))}
           </select>
+        </Field>
+
+        <Field label="Categoria (opcional)">
+          <input
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            list="known-categories"
+            className="input"
+            placeholder="Ex: Fruta, Lanches, Carne, Molhos…"
+          />
+          <datalist id="known-categories">
+            {knownCategories.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
         </Field>
 
         <Field label="Quantidade">

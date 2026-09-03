@@ -25,7 +25,7 @@ export async function upsertPlanDay(date: string, input: PlanDayInput) {
 
   const { error } = await supabase
     .from("weekly_plan")
-    .upsert({ user_id: user.id, date, ...input }, { onConflict: "user_id,date" });
+    .upsert({ user_id: user.id, date, ...input }, { onConflict: "date" });
   if (error) throw new Error(error.message);
   revalidateAll();
 }
