@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Despensa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FBF8F2;
+    --surface: #FFFFFF;
+    --surface-2: #F3EFE4;
+    --ink: #24302A;
+    --ink-soft: #6B7570;
+    --primary: #2E4A38;
+    --primary-tint: #E4ECE2;
+    --accent: #C98A2B;
+    --accent-tint: #F5E6C8;
+    --danger: #B84C3E;
+    --danger-tint: #F6DEDA;
+    --warn: #D9A62E;
+    --warn-tint: #FBEFD3;
+    --line: #E7E1D3;
+    --radius: 14px;
+    --radius-sm: 10px;
+    --shadow: 0 2px 10px rgba(36,48,42,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  #app{
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    position: relative;
+  }
+  /* ---------- Topbar ---------- */
+  .topbar{
+    position: sticky; top:0; z-index: 20;
+    background: var(--primary);
+    color: #fff;
+    padding: 16px 18px calc(14px + env(safe-area-inset-top,0px));
+    padding-top: calc(16px + env(safe-area-inset-top,0px));
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  }
+  .topbar h1{
+    font-size: 20px; font-weight: 800; margin:0; letter-spacing: -0.01em;
+  }
+  .bell{
+    position: relative; width:38px; height:38px; border-radius: 50%;
+    background: rgba(255,255,255,0.14); display:flex; align-items:center; justify-content:center;
+    border:none; color:#fff; cursor:pointer;
+  }
+  .bell svg{width:19px;height:19px;}
+  .bell .badge{
+    position:absolute; top:-4px; right:-4px; background: var(--danger);
+    color:#fff; font-size: 10.5px; font-weight:800; border-radius: 999px;
+    min-width:18px; height:18px; display:flex; align-items:center; justify-content:center;
+    padding: 0 3px; border: 2px solid var(--primary);
+  }
+  /* ---------- Main / views ---------- */
+  main{
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 16px calc(96px + env(safe-area-inset-bottom,0px));
+  }
+  .view{display:none;}
+  .view.active{display:block; animation: fadein .18s ease;}
+  @keyframes fadein{ from{opacity:0; transform: translateY(4px);} to{opacity:1; transform:none;} }
+
+  h2.view-title{ font-size: 18px; font-weight: 800; margin: 2px 0 14px; }
+  p.hint{ color: var(--ink-soft); font-size: 13px; margin: -6px 0 14px; line-height:1.5; }
+
+  /* ---------- Chips ---------- */
+  .chiprow{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px; -ms-overflow-style:none; scrollbar-width:none;}
+  .chiprow::-webkit-scrollbar{display:none;}
+  .chip{
+    flex: 0 0 auto; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink); font-size: 13.5px; font-weight:600; cursor:pointer; white-space:nowrap;
+  }
+  .chip.active{ background: var(--primary); border-color: var(--primary); color:#fff; }
+  .chip.add{ color: var(--accent); border-color: var(--accent-tint); background: var(--accent-tint); }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    border-radius: var(--radius-sm); border: none; font-family: inherit;
+    font-weight: 700; font-size: 14.5px; cursor:pointer; padding: 12px 16px;
+  }
+  .btn-primary{ background: var(--primary); color:#fff; }
+  .btn-accent{ background: var(--accent); color:#fff; }
+  .btn-ghost{ background: var(--surface-2); color: var(--ink); }
+  .btn-danger{ background: var(--danger-tint); color: var(--danger); }
+  .btn-block{ width:100%; }
+  .btn-sm{ padding: 8px 12px; font-size: 13px; }
+  .fab{
+    position: fixed; z-index: 15; right: 20px; bottom: calc(92px + env(safe-area-inset-bottom,0px));
+    width: 54px; height:54px; border-radius: 50%; background: var(--primary); color:#fff;
+    border:none; box-shadow: 0 6px 16px rgba(46,74,56,0.35); font-size: 26px; display:flex;
+    align-items:center; justify-content:center; cursor:pointer; line-height:0;
+  }
+  #app{ position:relative; }
+  .fab-wrap{ position:absolute; inset:0; pointer-events:none; }
+  .fab{ pointer-events:auto; position:absolute; left:50%; transform: translateX(190px); }
+
+  /* ---------- Cards / lists ---------- */
+  .zone-heading{ font-size: 13px; font-weight:800; color: var(--ink-soft); text-transform: none; margin: 18px 0 8px; }
+  .zone-heading:first-child{ margin-top:0; }
+  .card{
+    background: var(--surface); border-radius: var(--radius); padding: 13px 14px; margin-bottom: 10px;
+    box-shadow: var(--shadow); border: 1px solid var(--line);
+  }
+  .item-row{ display:flex; align-items:center; gap:12px; cursor:pointer; }
+  .item-main{ flex:1; min-width:0; }
+  .item-name{ font-weight:700; font-size: 15px; margin-bottom:3px; }
+  .item-meta{ font-size: 12.5px; color: var(--ink-soft); display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .tag{
+    font-size: 11.5px; font-weight:700; padding: 3px 8px; border-radius: 999px;
+  }
+  .tag-ok{ background: var(--primary-tint); color: var(--primary); }
+  .tag-soon{ background: var(--warn-tint); color:#8a6a10; }
+  .tag-expired{ background: var(--danger-tint); color: var(--danger); }
+  .amount-pill{
+    font-weight:800; font-size: 13.5px; background: var(--surface-2); color: var(--ink);
+    padding:6px 10px; border-radius: 999px; flex-shrink:0;
+  }
+  .empty{
+    text-align:center; padding: 40px 20px; color: var(--ink-soft);
+  }
+  .empty .big{ font-size: 34px; margin-bottom:8px; }
+  .empty p{ font-size: 14px; line-height:1.6; margin: 4px 0 16px; }
+
+  /* recipe card */
+  .recipe-card{ padding: 14px; }
+  .recipe-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .recipe-name{ font-weight:800; font-size:15.5px; }
+  .recipe-sub{ font-size:12.5px; color:var(--ink-soft); margin-top:3px; }
+  .mealtags{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .mealtag{ font-size:11px; font-weight:700; background:var(--surface-2); color:var(--ink-soft); padding:3px 8px; border-radius:999px; }
+
+  .match-badge{ font-size:11px; font-weight:800; padding: 4px 9px; border-radius:999px; flex-shrink:0; white-space:nowrap; }
+  .match-full{ background: var(--primary-tint); color: var(--primary); }
+  .match-partial{ background: var(--warn-tint); color:#8a6a10; }
+
+  section.sugg-block{ margin-bottom: 22px; }
+  .sugg-title{ font-size:14.5px; font-weight:800; margin-bottom:2px; }
+  .sugg-note{ font-size:12px; color:var(--ink-soft); margin-bottom:10px; }
+
+  /* plan */
+  .day-card{ padding: 13px 14px; }
+  .day-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .day-name{ font-weight:800; font-size:15px; }
+  .day-date{ font-size:12px; color:var(--ink-soft); }
+  .meal-toggle-row{ display:flex; gap:10px; margin-bottom:8px; }
+  .meal-toggle{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+    padding: 8px 6px; border-radius: var(--radius-sm); border:1px solid var(--line); background: var(--surface-2);
+    font-size:12.5px; font-weight:700; color: var(--ink-soft); cursor:pointer;
+  }
+  .meal-toggle.on{ background: var(--primary-tint); color: var(--primary); border-color: transparent; }
+  .meal-select-wrap{ margin-top:6px; }
+  select, input[type=text], input[type=number], input[type=date], textarea{
+    width:100%; font-family:inherit; font-size:14.5px; padding: 11px 12px; border-radius: var(--radius-sm);
+    border:1px solid var(--line); background: var(--surface); color: var(--ink);
+  }
+  select.recipe-select{ font-size:13.5px; padding: 9px 10px; }
+  label.field-label{ font-size:12.5px; font-weight:700; color: var(--ink-soft); display:block; margin: 14px 0 6px; }
+  label.field-label:first-child{ margin-top:0; }
+
+  /* shopping */
+  .shop-item{ display:flex; align-items:center; gap:12px; padding: 12px 4px; border-bottom:1px solid var(--line); }
+  .shop-item:last-child{ border-bottom:none; }
+  .checkbox{
+    width:22px; height:22px; border-radius:7px; border:2px solid var(--line); flex-shrink:0; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .checkbox.checked{ background: var(--primary); border-color: var(--primary); }
+  .checkbox.checked svg{ width:13px; height:13px; stroke:#fff; }
+  .shop-name{ flex:1; font-size:14.5px; font-weight:600; }
+  .shop-item.checked .shop-name{ text-decoration: line-through; color: var(--ink-soft); }
+  .shop-sub{ font-size:11.5px; color: var(--ink-soft); }
+  .add-manual-row{ display:flex; gap:8px; margin-top:14px; }
+  .add-manual-row input{ flex:1; }
+
+  /* ---------- Bottom nav ---------- */
+  .bottomnav{
+    position: sticky; bottom:0; z-index: 20;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    display:flex;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .navbtn{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+    padding: 10px 2px 8px; border:none; background:none; cursor:pointer; color: var(--ink-soft);
+  }
+  .navbtn svg{ width:22px; height:22px; }
+  .navbtn span{ font-size: 10.5px; font-weight:700; }
+  .navbtn.active{ color: var(--primary); }
+
+  /* ---------- Sheet (modal) ---------- */
+  .sheet-overlay{
+    position: fixed; inset:0; background: rgba(20,24,20,0.45); z-index: 50;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .sheet-overlay.hidden{ display:none; }
+  .sheet{
+    background: var(--bg); width:100%; max-width:480px; max-height: 88vh; overflow-y:auto;
+    border-radius: 20px 20px 0 0; padding: 18px 18px calc(24px + env(safe-area-inset-bottom,0px));
+    animation: slideup .2s ease;
+  }
+  @keyframes slideup{ from{ transform: translateY(30px); opacity:0.4;} to{transform:none; opacity:1;} }
+  .sheet-handle{ width:36px; height:4px; background: var(--line); border-radius:999px; margin: 0 auto 14px; }
+  .sheet-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .sheet-head h3{ margin:0; font-size:17px; font-weight:800; }
+  .sheet-close{ border:none; background:var(--surface-2); width:32px; height:32px; border-radius:50%; font-size:16px; cursor:pointer; color:var(--ink-soft); }
+
+  .fraction-row{ display:flex; gap:8px; margin-top:6px; }
+  .fraction-btn{
+    flex:1; padding: 10px 4px; border-radius: var(--radius-sm); border:1px solid var(--line);
+    background: var(--surface); font-weight:700; font-size:13px; cursor:pointer; color: var(--ink);
+  }
+  .fraction-btn.danger{ color: var(--danger); border-color: var(--danger-tint); background: var(--danger-tint); }
+  .stepper{ display:flex; align-items:center; gap:10px; }
+  .stepper button{ width:38px; height:38px; border-radius:10px; border:1px solid var(--line); background:var(--surface); font-size:18px; font-weight:800; cursor:pointer; color:var(--primary); }
+  .stepper .val{ min-width:60px; text-align:center; font-weight:800; font-size:16px; }
+  .inline-check{ display:flex; align-items:center; gap:8px; margin: 10px 0 4px; font-size:13.5px; color: var(--ink-soft); }
+  .row-2{ display:flex; gap:10px; }
+  .row-2 > div{ flex:1; }
+  .ing-line{ display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+  .ing-line input{ flex:1; }
+  .ing-remove{ width:36px; height:36px; border-radius:10px; border:none; background: var(--danger-tint); color: var(--danger); font-size:16px; cursor:pointer; flex-shrink:0; }
+  .sheet-actions{ display:flex; gap:10px; margin-top:20px; }
+  .sheet-actions .btn{ flex:1; }
+  .mealtype-picker{ display:flex; gap:8px; flex-wrap:wrap; }
+  .mealtype-opt{ padding:8px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); font-size:13px; font-weight:600; cursor:pointer; }
+  .mealtype-opt.on{ background: var(--primary); border-color: var(--primary); color:#fff; }
+
+  .toast{
+    position: fixed; bottom: calc(100px + env(safe-area-inset-bottom,0px)); left:50%; transform: translateX(-50%);
+    background: var(--ink); color:#fff; padding: 10px 18px; border-radius: 999px; font-size:13.5px; font-weight:600;
+    z-index: 60; opacity:0; transition: opacity .2s ease, transform .2s ease; pointer-events:none;
+  }
+  .toast.show{ opacity:1; }
+
+  .recipe-detail p{ font-size:14px; line-height:1.6; color: var(--ink); white-space: pre-wrap; }
+  .recipe-ing-list{ margin: 4px 0 0; padding-left: 18px; font-size:14px; line-height:1.7; }
+  .recipe-ing-list li.have{ color: var(--ink); }
+  .recipe-ing-list li.missing{ color: var(--danger); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <h1>Despensa</h1>
+    <button class="bell" id="bellBtn" aria-label="Alertas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 3.2-1 4.6-2 6h16c-1-1.4-2-2.8-2-6"/><path d="M9.5 20a2.5 2.5 0 0 0 5 0"/></svg>
+      <span class="badge hidden" id="alertBadge">0</span>
+    </button>
+  </header>
+
+  <main id="views">
+
+    <!-- INVENTÁRIO -->
+    <section class="view active" id="view-inventario">
+      <h2 class="view-title">Inventário</h2>
+      <div class="chiprow" id="zoneChips"></div>
+      <div id="inventoryList"></div>
+    </section>
+
+    <!-- RECEITAS -->
+    <section class="view" id="view-receitas">
+      <h2 class="view-title">Receitas</h2>
+      <div id="recipesList"></div>
+    </section>
+
+    <!-- SUGESTÕES -->
+    <section class="view" id="view-sugestoes">
+      <h2 class="view-title">Sugestões</h2>
+      <p class="hint">Com base no que combinares por nome com o teu inventário — a comparação é por ingrediente, não por quantidade exata.</p>
+      <div id="suggestionsList"></div>
+    </section>
+
+    <!-- PLANO -->
+    <section class="view" id="view-plano">
+      <h2 class="view-title">Plano da semana</h2>
+      <p class="hint">Diz para cada dia se almoças e/ou jantas em casa, e escolhe a receita.</p>
+      <div id="planList"></div>
+      <button class="btn btn-accent btn-block" style="margin-top:16px" id="genShoppingBtn">Gerar lista de compras</button>
+    </section>
+
+    <!-- COMPRAS -->
+    <section class="view" id="view-compras">
+      <h2 class="view-title">Lista de compras</h2>
+      <div id="shoppingLowStock"></div>
+      <div id="shoppingFromPlan"></div>
+      <div id="shoppingManual"></div>
+      <div class="add-manual-row">
+        <input type="text" id="manualItemInput" placeholder="Adicionar item (ex: papel higiénico)">
+        <button class="btn btn-primary" id="addManualBtn">+</button>
+      </div>
+      <button class="btn btn-ghost btn-block" style="margin-top:16px" id="clearCheckedBtn">Limpar comprados</button>
+    </section>
+
+  </main>
+
+  <div class="fab-wrap">
+    <button class="fab" id="fabBtn">+</button>
+  </div>
+
+  <nav class="bottomnav">
+    <button class="navbtn active" data-view="inventario">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16l-1.5 9a1.5 1.5 0 0 1-1.5 1.3H7A1.5 1.5 0 0 1 5.5 19z"/><path d="M8 10 9 4h6l1 6"/><path d="M10 14v3M14 14v3"/></svg>
+      <span>Inventário</span>
+    </button>
+    <button class="navbtn" data-view="receitas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5C5 3.7 5.7 3 6.5 3H18a1 1 0 0 1 1 1v15.5a1 1 0 0 1-1 1H6.5A1.5 1.5 0 0 1 5 19z"/><path d="M8 3v17"/><path d="M11 7h6M11 10.5h6"/></svg>
+      <span>Receitas</span>
+    </button>
+    <button class="navbtn" data-view="sugestoes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+      <span>Sugestões</span>
+    </button>
+    <button class="navbtn" data-view="plano">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.3"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/><path d="M8 13.5h2M14 13.5h2M8 17h2M14 17h2"/></svg>
+      <span>Plano</span>
+    </button>
+    <button class="navbtn" data-view="compras">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 12.2A1.8 1.8 0 0 0 9 17.8h8.5a1.8 1.8 0 0 0 1.75-1.4L21 8H6"/><circle cx="9.5" cy="21" r="1.3"/><circle cx="17" cy="21" r="1.3"/></svg>
+      <span>Compras</span>
+    </button>
+  </nav>
+</div>
+
+<div class="sheet-overlay hidden" id="sheetOverlay">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ STATE ============ */
+  var DEFAULT_ZONES = ["Frigorífico","Congelador","Despensa","Outros"];
+  var MEAL_TYPES = ["Jantar","Almoço","Outro"];
+  var STORAGE_KEY = "despensa-app-state-v1";
+
+  var state = {
+    zones: DEFAULT_ZONES.slice(),
+    items: [],
+    recipes: [],
+    plan: {},            // isoDate -> {wantsLunch,wantsDinner,lunchRecipe,dinnerRecipe}
+    weekStart: null,     // iso date of monday for current plan
+    shoppingManual: [],  // {id,name,checked}
+    shoppingChecked: {}  // ingredientName(lower) -> bool, for plan-derived list
+  };
+
+  var currentView = "inventario";
+  var currentZoneFilter = "Todos";
+
+  /* ============ UTIL ============ */
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function todayISO(){ var d=new Date(); d.setHours(0,0,0,0); return d.toISOString().slice(0,10); }
+  function toISO(d){ var x=new Date(d); x.setHours(0,0,0,0); return x.toISOString().slice(0,10); }
+  function fromISO(iso){ var p=iso.split("-"); return new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])); }
+  function daysBetween(a,b){ return Math.round((fromISO(b)-fromISO(a))/86400000); }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+  function fmtAmount(n){
+    n = Math.round(n*4)/4;
+    var whole = Math.floor(n);
+    var frac = Math.round((n-whole)*4)/4;
+    var fracStr = "";
+    if(frac===0.25) fracStr="¼"; else if(frac===0.5) fracStr="½"; else if(frac===0.75) fracStr="¾";
+    if(whole>0 && fracStr) return whole+" + "+fracStr;
+    if(whole>0) return ""+whole;
+    if(fracStr) return fracStr;
+    return "0";
+  }
+
+  function monday(d){
+    var x = new Date(d); var day = x.getDay(); var diff = day===0?-6:1-day;
+    x.setDate(x.getDate()+diff); x.setHours(0,0,0,0); return x;
+  }
+  function weekDates(startIso){
+    var m = fromISO(startIso); var out=[];
+    for(var i=0;i<7;i++){ var d=new Date(m); d.setDate(m.getDate()+i); out.push(toISO(d)); }
+    return out;
+  }
+  var DAY_NAMES = ["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"];
+
+  function toast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  /* ============ STORAGE ============ */
+  var saveTimer = null;
+  function scheduleSave(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(persist, 260);
+  }
+  function persist(){
+    try{
+      window.storage.set("state", JSON.stringify(state), false).catch(function(){});
+    }catch(e){ /* storage unavailable, continue in-memory */ }
+  }
+  function load(){
+    return new Promise(function(resolve){
+      try{
+        window.storage.get("state", false).then(function(res){
+          if(res && res.value){
+            try{
+              var parsed = JSON.parse(res.value);
+              Object.keys(parsed).forEach(function(k){ state[k]=parsed[k]; });
+            }catch(e){}
+          }
+          resolve();
+        }).catch(function(){ resolve(); });
+      }catch(e){ resolve(); }
+    });
+  }
+
+  /* ============ EXPIRY STATUS ============ */
+  function itemStatus(item){
+    if(!item.expiry) return {status:"none"};
+    var d = daysBetween(todayISO(), item.expiry);
+    if(d<0) return {status:"expired", days:d};
+    if(d<=(item.alertDays==null?3:item.alertDays)) return {status:"soon", days:d};
+    return {status:"ok", days:d};
+  }
+  function countAlerts(){
+    var expiryAlerts = state.items.filter(function(it){ var s=itemStatus(it).status; return s==="soon"||s==="expired"; }).length;
+    return expiryAlerts + lowStockItems().length;
+  }
+
+  /* ============ LOW STOCK (tudo exceto Frigorífico/Congelador) ============ */
+  var STOCK_TRACKED_EXCLUDE = ["Frigorífico","Congelador"];
+  function tracksStock(zone){
+    return STOCK_TRACKED_EXCLUDE.indexOf(zone) === -1;
+  }
+  function isLow(it){
+    return tracksStock(it.zone) && it.minStock!=null && !it.ignoreLowStock && it.amount<=it.minStock;
+  }
+  function lowStockItems(){
+    return state.items.filter(isLow);
+  }
+
+  /* ============ NAV ============ */
+  function switchView(v){
+    currentView = v;
+    document.querySelectorAll(".view").forEach(function(el){ el.classList.remove("active"); });
+    document.getElementById("view-"+v).classList.add("active");
+    document.querySelectorAll(".navbtn").forEach(function(b){ b.classList.toggle("active", b.dataset.view===v); });
+    document.getElementById("fabBtn").style.display = (v==="sugestoes"||v==="plano") ? "none":"flex";
+    renderAll();
+  }
+
+  /* ============ SHEET (modal) ============ */
+  function openSheet(html, onOpen){
+    document.getElementById("sheet").innerHTML = '<div class="sheet-handle"></div>'+html;
+    document.getElementById("sheetOverlay").classList.remove("hidden");
+    if(onOpen) onOpen();
+  }
+  function closeSheet(){
+    document.getElementById("sheetOverlay").classList.add("hidden");
+    document.getElementById("sheet").innerHTML = "";
+  }
+  document.getElementById("sheetOverlay").addEventListener("click", function(e){
+    if(e.target.id==="sheetOverlay") closeSheet();
+  });
+
+  /* ============ RENDER: INVENTÁRIO ============ */
+  function renderZoneChips(){
+    var all = ["Todos"].concat(state.zones);
+    var html = all.map(function(z){
+      return '<button class="chip '+(currentZoneFilter===z?"active":"")+'" data-zone="'+esc(z)+'">'+esc(z)+'</button>';
+    }).join("") + '<button class="chip add" id="addZoneChip">+ Zona</button>';
+    document.getElementById("zoneChips").innerHTML = html;
+    document.querySelectorAll("#zoneChips [data-zone]").forEach(function(b){
+      b.addEventListener("click", function(){ currentZoneFilter = b.dataset.zone; renderInventory(); renderZoneChips(); });
+    });
+    document.getElementById("addZoneChip").addEventListener("click", promptNewZone);
+  }
+
+  function promptNewZone(){
+    openSheet(
+      '<div class="sheet-head"><h3>Nova zona</h3><button class="sheet-close" id="sc">✕</button></div>'+
+      '<label class="field-label">Nome da zona</label>'+
+      '<input type="text" id="zoneNameInput" placeholder="ex: Bar, Garagem...">'+
+      '<div class="sheet-actions"><button class="btn btn-primary btn-block" id="saveZoneBtn">Adicionar</button></div>'
+    );
+    document.getElementById("sc").addEventListener("click", closeSheet);
+    document.getElementById("saveZoneBtn").addEventListener("click", function(){
+      var v = document.getElementById("zoneNameInput").value.trim();
+      if(!v){ toast("Escreve um nome"); return; }
+      if(state.zones.indexOf(v)===-1) state.zones.push(v);
+      scheduleSave(); closeSheet(); renderZoneChips(); renderInventory();
+    });
+  }
+
+  function renderInventory(){
+    var list = document.getElementById("inventoryList");
+    var items = state.items.filter(function(it){ return currentZoneFilter==="Todos" || it.zone===currentZoneFilter; });
+    if(items.length===0){
+      list.innerHTML = '<div class="empty"><div class="big">🧺</div><p>Ainda não tens itens aqui.<br>Adiciona o que tens no frigorífico, congelador, despensa ou outros.</p>'+
+        '<button class="btn btn-primary" id="emptyAddBtn">+ Adicionar item</button></div>';
+      document.getElementById("emptyAddBtn").addEventListener("click", function(){ openItemSheet(null); });
+      return;
+    }
+    var zonesToShow = currentZoneFilter==="Todos" ? state.zones : [currentZoneFilter];
+    var html = "";
+    zonesToShow.forEach(function(zone){
+      var zItems = items.filter(function(it){ return it.zone===zone; });
+      if(zItems.length===0) return;
+      zItems.sort(function(a,b){
+        var sa=itemStatus(a).status, sb=itemStatus(b).status;
+        var rank={expired:0,soon:1,ok:2,none:3};
+        if(rank[sa]!==rank[sb]) return rank[sa]-rank[sb];
+        return a.name.localeCompare(b.name);
+      });
+      html += '<div class="zone-heading">'+esc(zone)+'</div>';
+      zItems.forEach(function(it){
+        var st = itemStatus(it);
+        var tag = "";
+        if(st.status==="expired") tag='<span class="tag tag-expired">Validade passada</span>';
+        else if(st.status==="soon") tag='<span class="tag tag-soon">'+(st.days===0?"Expira hoje":st.days===1?"Expira amanhã":"Expira em "+st.days+"d")+'</span>';
+        else if(st.status==="ok") tag='<span class="tag tag-ok">Válido</span>';
+        if(isLow(it)) tag += '<span class="tag tag-soon">Stock baixo</span>';
+        html += '<div class="card item-row" data-item="'+it.id+'">'+
+          '<div class="item-main"><div class="item-name">'+esc(it.name)+'</div>'+
+          '<div class="item-meta">'+tag+'</div></div>'+
+          '<div class="amount-pill">'+fmtAmount(it.amount)+' '+esc(it.unit||"")+'</div>'+
+          '</div>';
+      });
+    });
+    list.innerHTML = html;
+    document.querySelectorAll("#inventoryList [data-item]").forEach(function(el){
+      el.addEventListener("click", function(){ openItemSheet(el.dataset.item); });
+    });
+  }
+
+  function openItemSheet(itemId){
+    var it = itemId ? state.items.find(function(i){ return i.id===itemId; }) : {
+      id: null, name:"", amount:1, unit:"unidades", zone: state.zones[0], expiry:null, alertDays:3
+    };
+    var zoneOptions = state.zones.map(function(z){ return '<option value="'+esc(z)+'" '+(z===it.zone?"selected":"")+'>'+esc(z)+'</option>'; }).join("");
+    var noExpiry = !it.expiry;
+    openSheet(
+      '<div class="sheet-head"><h3>'+(itemId?"Editar item":"Novo item")+'</h3><button class="sheet-close" id="sc">✕</button></div>'+
+      '<label class="field-label">Nome</label>'+
+      '<input type="text" id="f_name" placeholder="ex: Queijo flamengo" value="'+esc(it.name)+'">'+
+      '<label class="field-label">Zona</label>'+
+      '<select id="f_zone">'+zoneOptions+'</select>'+
+      '<label class="field-label">Quantidade</label>'+
+      '<div class="stepper">'+
+        '<button id="qMinus" type="button">–</button>'+
+        '<div class="val" id="qVal">'+fmtAmount(it.amount)+'</div>'+
+        '<button id="qPlus" type="button">+</button>'+
+      '</div>'+
+      (itemId ? '<div class="fraction-row">'+
+        '<button class="fraction-btn" data-dec="0.25">−¼</button>'+
+        '<button class="fraction-btn" data-dec="0.5">−½</button>'+
+        '<button class="fraction-btn" data-dec="0.75">−¾</button>'+
+        '<button class="fraction-btn danger" data-dec="all">Usei tudo</button>'+
+      '</div>' : '')+
+      '<label class="field-label">Unidade (opcional)</label>'+
+      '<input type="text" id="f_unit" placeholder="ex: pacote, garrafa, kg" value="'+esc(it.unit||"")+'">'+
+      '<div class="inline-check"><input type="checkbox" id="f_noexpiry" '+(noExpiry?"checked":"")+'> Não tem validade</div>'+
+      '<div id="expiryFields" style="'+(noExpiry?"display:none":"")+'">'+
+        '<div class="row-2">'+
+          '<div><label class="field-label">Validade</label><input type="date" id="f_expiry" value="'+esc(it.expiry||"")+'"></div>'+
+          '<div><label class="field-label">Alertar (dias antes)</label><input type="number" id="f_alertdays" min="0" value="'+(it.alertDays==null?3:it.alertDays)+'"></div>'+
+        '</div>'+
+      '</div>'+
+      '<div id="lowStockFields" style="'+(tracksStock(it.zone)?"":"display:none")+'">'+
+        '<label class="field-label">Avisar na lista de compras quando restar (ou menos)</label>'+
+        '<input type="number" id="f_minstock" min="0" step="0.25" placeholder="ex: 4" value="'+(it.minStock==null?"":it.minStock)+'">'+
+        '<div class="inline-check"><input type="checkbox" id="f_ignorelow" '+(it.ignoreLowStock?"checked":"")+'> Não sugerir este item na lista de compras</div>'+
+      '</div>'+
+      '<div class="sheet-actions">'+
+        (itemId ? '<button class="btn btn-danger" id="deleteBtn">Eliminar</button>' : '')+
+        '<button class="btn btn-primary" id="saveItemBtn">Guardar</button>'+
+      '</div>',
+      function(){
+        var amount = it.amount;
+        function updateVal(){ document.getElementById("qVal").textContent = fmtAmount(amount); }
+        document.getElementById("qMinus").addEventListener("click", function(){ amount=Math.max(0,amount-1); updateVal(); });
+        document.getElementById("qPlus").addEventListener("click", function(){ amount=amount+1; updateVal(); });
+        document.querySelectorAll("[data-dec]").forEach(function(b){
+          b.addEventListener("click", function(){
+            if(b.dataset.dec==="all"){ amount=0; } else { amount=Math.max(0, amount-parseFloat(b.dataset.dec)); }
+            updateVal();
+          });
+        });
+        document.getElementById("f_noexpiry").addEventListener("change", function(e){
+          document.getElementById("expiryFields").style.display = e.target.checked ? "none":"block";
+        });
+        document.getElementById("f_zone").addEventListener("change", function(e){
+          document.getElementById("lowStockFields").style.display = tracksStock(e.target.value) ? "block":"none";
+        });
+        document.getElementById("sc").addEventListener("click", closeSheet);
+        if(itemId){
+          document.getElementById("deleteBtn").addEventListener("click", function(){
+            state.items = state.items.filter(function(i){ return i.id!==itemId; });
+            scheduleSave(); closeSheet(); renderInventory(); renderAlertBadge(); toast("Item eliminado");
+          });
+        }
+        document.getElementById("saveItemBtn").addEventListener("click", function(){
+          var name = document.getElementById("f_name").value.trim();
+          if(!name){ toast("Dá um nome ao item"); return; }
+          var noExp = document.getElementById("f_noexpiry").checked;
+          var minStockVal = document.getElementById("f_minstock").value;
+          var payload = {
+            id: itemId || uid(),
+            name: name,
+            amount: amount,
+            unit: document.getElementById("f_unit").value.trim(),
+            zone: document.getElementById("f_zone").value,
+            expiry: noExp ? null : (document.getElementById("f_expiry").value || null),
+            alertDays: noExp ? null : (parseInt(document.getElementById("f_alertdays").value,10) || 0),
+            minStock: minStockVal===""? null : parseFloat(minStockVal),
+            ignoreLowStock: document.getElementById("f_ignorelow").checked
+          };
+          if(itemId){
+            var idx = state.items.findIndex(function(i){ return i.id===itemId; });
+            state.items[idx] = payload;
+          } else {
+            state.items.push(payload);
+          }
+          scheduleSave(); closeSheet(); renderInventory(); renderAlertBadge();
+          toast(itemId?"Item atualizado":"Item adicionado");
+        });
+      }
+    );
+  }
+
+  function renderAlertBadge(){
+    var n = countAlerts();
+    var b = document.getElementById("alertBadge");
+    if(n>0){ b.textContent = n; b.classList.remove("hidden"); } else { b.classList.add("hidden"); }
+  }
+
+  /* ============ RENDER: RECEITAS ============ */
+  function renderRecipes(){
+    var list = document.getElementById("recipesList");
+    if(state.recipes.length===0){
+      list.innerHTML = '<div class="empty"><div class="big">📖</div><p>Ainda não tens receitas guardadas.<br>Adiciona as que fazes mais vezes.</p>'+
+        '<button class="btn btn-primary" id="emptyAddRecipe">+ Nova receita</button></div>';
+      document.getElementById("emptyAddRecipe").addEventListener("click", function(){ openRecipeSheet(null); });
+      return;
+    }
+    var html = state.recipes.map(function(r){
+      return '<div class="card recipe-card" data-recipe="'+r.id+'">'+
+        '<div class="recipe-top"><div><div class="recipe-name">'+esc(r.name)+'</div>'+
+        '<div class="recipe-sub">'+(r.prepMinutes||"?")+' min · '+(r.servings||2)+' pessoas</div></div></div>'+
+        '<div class="mealtags">'+(r.mealTypes||[]).map(function(m){ return '<span class="mealtag">'+esc(m)+'</span>'; }).join("")+'</div>'+
+        '</div>';
+    }).join("");
+    list.innerHTML = html;
+    document.querySelectorAll("#recipesList [data-recipe]").forEach(function(el){
+      el.addEventListener("click", function(){ openRecipeDetail(el.dataset.recipe); });
+    });
+  }
+
+  function ingredientInStock(name){
+    var n = name.trim().toLowerCase();
+    var it = state.items.find(function(i){ return i.name.trim().toLowerCase()===n; });
+    return it && it.amount>0;
+  }
+
+  function openRecipeDetail(recipeId){
+    var r = state.recipes.find(function(x){ return x.id===recipeId; });
+    if(!r) return;
+    var ingHtml = (r.ingredients||[]).map(function(ing){
+      var have = ingredientInStock(ing.name);
+      return '<li class="'+(have?"have":"missing")+'">'+esc(ing.name)+(ing.qty?" — "+esc(ing.qty):"")+(have?"":" (falta)")+'</li>';
+    }).join("");
+    openSheet(
+      '<div class="sheet-head"><h3>'+esc(r.name)+'</h3><button class="sheet-close" id="sc">✕</button></div>'+
+      '<div class="recipe-detail">'+
+      '<p style="margin-top:0;color:var(--ink-soft);font-size:13px">'+(r.prepMinutes||"?")+' min · '+(r.servings||2)+' pessoas · '+(r.mealTypes||[]).join(", ")+'</p>'+
+      '<label class="field-label">Ingredientes</label>'+
+      '<ul class="recipe-ing-list">'+ingHtml+'</ul>'+
+      '<label class="field-label">Modo de preparação</label>'+
+      '<p>'+esc(r.instructions||"—")+'</p>'+
+      '</div>'+
+      '<div class="sheet-actions">'+
+        '<button class="btn btn-danger" id="delRecipe">Eliminar</button>'+
+        '<button class="btn btn-ghost" id="editRecipe">Editar</button>'+
+      '</div>'
+    );
+    document.getElementById("sc").addEventListener("click", closeSheet);
+    document.getElementById("delRecipe").addEventListener("click", function(){
+      state.recipes = state.recipes.filter(function(x){ return x.id!==recipeId; });
+      scheduleSave(); closeSheet(); renderRecipes(); toast("Receita eliminada");
+    });
+    document.getElementById("editRecipe").addEventListener("click", function(){ openRecipeSheet(recipeId); });
+  }
+
+  function openRecipeSheet(recipeId){
+    var r = recipeId ? state.recipes.find(function(x){ return x.id===recipeId; }) : {
+      id:null, name:"", prepMinutes:30, servings:2, mealTypes:["Jantar"], ingredients:[{name:"",qty:""}], instructions:""
+    };
+    var mealHtml = MEAL_TYPES.map(function(m){
+      return '<button type="button" class="mealtype-opt '+((r.mealTypes||[]).indexOf(m)>-1?"on":"")+'" data-meal="'+m+'">'+m+'</button>';
+    }).join("");
+    openSheet(
+      '<div class="sheet-head"><h3>'+(recipeId?"Editar receita":"Nova receita")+'</h3><button class="sheet-close" id="sc">✕</button></div>'+
+      '<label class="field-label">Nome</label>'+
+      '<input type="text" id="r_name" placeholder="ex: Esparguete à bolonhesa" value="'+esc(r.name)+'">'+
+      '<div class="row-2">'+
+        '<div><label class="field-label">Tempo (min)</label><input type="number" id="r_time" value="'+(r.prepMinutes||"")+'"></div>'+
+        '<div><label class="field-label">Pessoas</label><input type="number" id="r_servings" value="'+(r.servings||2)+'"></div>'+
+      '</div>'+
+      '<label class="field-label">Tipo de refeição</label>'+
+      '<div class="mealtype-picker" id="mealPicker">'+mealHtml+'</div>'+
+      '<label class="field-label">Ingredientes</label>'+
+      '<div id="ingList"></div>'+
+      '<button class="btn btn-ghost btn-sm" id="addIngBtn" type="button">+ Ingrediente</button>'+
+      '<label class="field-label">Modo de preparação</label>'+
+      '<textarea id="r_instructions" rows="4" placeholder="Passos rápidos...">'+esc(r.instructions||"")+'</textarea>'+
+      '<div class="sheet-actions">'+
+        (recipeId?'<button class="btn btn-danger" id="deleteRecipeBtn">Eliminar</button>':'')+
+        '<button class="btn btn-primary" id="saveRecipeBtn">Guardar</button>'+
+      '</div>',
+      function(){
+        var ingredients = (r.ingredients&&r.ingredients.length)? r.ingredients.slice() : [{name:"",qty:""}];
+        function renderIngList(){
+          document.getElementById("ingList").innerHTML = ingredients.map(function(ing,idx){
+            return '<div class="ing-line" data-idx="'+idx+'">'+
+              '<input type="text" class="ing-name" placeholder="Ingrediente" value="'+esc(ing.name)+'">'+
+              '<input type="text" class="ing-qty" placeholder="Qtd (opcional)" style="max-width:100px" value="'+esc(ing.qty||"")+'">'+
+              '<button class="ing-remove" type="button" data-remove="'+idx+'">✕</button>'+
+            '</div>';
+          }).join("");
+          document.querySelectorAll(".ing-name").forEach(function(inp,idx){ inp.addEventListener("input", function(){ ingredients[idx].name=inp.value; }); });
+          document.querySelectorAll(".ing-qty").forEach(function(inp,idx){ inp.addEventListener("input", function(){ ingredients[idx].qty=inp.value; }); });
+          document.querySelectorAll("[data-remove]").forEach(function(b){
+            b.addEventListener("click", function(){
+              ingredients.splice(parseInt(b.dataset.remove,10),1);
+              if(ingredients.length===0) ingredients.push({name:"",qty:""});
+              renderIngList();
+            });
+          });
+        }
+        renderIngList();
+        document.getElementById("addIngBtn").addEventListener("click", function(){ ingredients.push({name:"",qty:""}); renderIngList(); });
+        var selectedMeals = (r.mealTypes||[]).slice();
+        document.querySelectorAll("#mealPicker [data-meal]").forEach(function(b){
+          b.addEventListener("click", function(){
+            var m = b.dataset.meal;
+            var i = selectedMeals.indexOf(m);
+            if(i>-1){ selectedMeals.splice(i,1); b.classList.remove("on"); }
+            else { selectedMeals.push(m); b.classList.add("on"); }
+          });
+        });
+        document.getElementById("sc").addEventListener("click", closeSheet);
+        if(recipeId){
+          document.getElementById("deleteRecipeBtn").addEventListener("click", function(){
+            state.recipes = state.recipes.filter(function(x){ return x.id!==recipeId; });
+            scheduleSave(); closeSheet(); renderRecipes(); toast("Receita eliminada");
+          });
+        }
+        document.getElementById("saveRecipeBtn").addEventListener("click", function(){
+          var name = document.getElementById("r_name").value.trim();
+          if(!name){ toast("Dá um nome à receita"); return; }
+          var cleanIngredients = ingredients.filter(function(i){ return i.name.trim(); });
+          var payload = {
+            id: recipeId || uid(),
+            name: name,
+            prepMinutes: parseInt(document.getElementById("r_time").value,10) || null,
+            servings: parseInt(document.getElementById("r_servings").value,10) || 2,
+            mealTypes: selectedMeals,
+            ingredients: cleanIngredients,
+            instructions: document.getElementById("r_instructions").value.trim()
+          };
+          if(recipeId){
+            var idx = state.recipes.findIndex(function(x){ return x.id===recipeId; });
+            state.recipes[idx]=payload;
+          } else { state.recipes.push(payload); }
+          scheduleSave(); closeSheet(); renderRecipes();
+          toast(recipeId?"Receita atualizada":"Receita adicionada");
+        });
+      }
+    );
+  }
+
+  /* ============ RENDER: SUGESTÕES ============ */
+  function recipeMatch(r){
+    var ings = r.ingredients||[];
+    if(ings.length===0) return {have:0,total:0,ratio:0};
+    var have = ings.filter(function(i){ return ingredientInStock(i.name); }).length;
+    return {have:have, total:ings.length, ratio: have/ings.length};
+  }
+  function recipeTouchesSoonItems(r){
+    var soonNames = state.items.filter(function(it){ var s=itemStatus(it).status; return s==="soon"||s==="expired"; })
+      .map(function(it){ return it.name.trim().toLowerCase(); });
+    return (r.ingredients||[]).some(function(i){ return soonNames.indexOf(i.name.trim().toLowerCase())>-1; });
+  }
+  function renderSuggestions(){
+    var container = document.getElementById("suggestionsList");
+    if(state.recipes.length===0){
+      container.innerHTML = '<div class="empty"><div class="big">✨</div><p>Adiciona receitas primeiro para veres sugestões aqui.</p></div>';
+      return;
+    }
+    var full = state.recipes.filter(function(r){ var m=recipeMatch(r); return m.total>0 && m.have===m.total; });
+    var soon = full.filter(recipeTouchesSoonItems).concat(
+      state.recipes.filter(function(r){ var m=recipeMatch(r); return !(m.total>0 && m.have===m.total) && recipeTouchesSoonItems(r); })
+    );
+    function cardHtml(r){
+      var m = recipeMatch(r);
+      var badge = m.total>0 && m.have===m.total ? '<span class="match-badge match-full">Tens tudo</span>' : '<span class="match-badge match-partial">'+m.have+'/'+m.total+'</span>';
+      return '<div class="card recipe-card" data-recipe="'+r.id+'">'+
+        '<div class="recipe-top"><div><div class="recipe-name">'+esc(r.name)+'</div>'+
+        '<div class="recipe-sub">'+(r.prepMinutes||"?")+' min · '+(r.servings||2)+' pessoas</div></div>'+badge+'</div>'+
+        '</div>';
+    }
+    var html = "";
+    html += '<div class="sugg-block"><div class="sugg-title">Aproveita o que está a acabar</div>';
+    html += '<div class="sugg-note">Receitas com ingredientes perto da validade ou já expirados.</div>';
+    html += soon.length ? soon.map(cardHtml).join("") : '<p class="hint" style="margin-top:0">Nada urgente a usar agora.</p>';
+    html += '</div>';
+    html += '<div class="sugg-block"><div class="sugg-title">Podes fazer já</div>';
+    html += '<div class="sugg-note">Tens todos os ingredientes destas receitas em stock.</div>';
+    html += full.length ? full.map(cardHtml).join("") : '<p class="hint" style="margin-top:0">Ainda nenhuma receita 100% coberta pelo stock.</p>';
+    html += '</div>';
+    container.innerHTML = html;
+    container.querySelectorAll("[data-recipe]").forEach(function(el){
+      el.addEventListener("click", function(){ openRecipeDetail(el.dataset.recipe); });
+    });
+  }
+
+  /* ============ RENDER: PLANO ============ */
+  function ensureWeek(){
+    var wantedStart = toISO(monday(new Date()));
+    if(!state.weekStart){ state.weekStart = wantedStart; }
+  }
+  function renderPlan(){
+    ensureWeek();
+    var dates = weekDates(state.weekStart);
+    var container = document.getElementById("planList");
+    var html = dates.map(function(iso, idx){
+      var day = state.plan[iso] || {wantsLunch:false, wantsDinner:false, lunchRecipe:null, dinnerRecipe:null};
+      var d = fromISO(iso);
+      var dateLabel = d.getDate()+"/"+(d.getMonth()+1);
+      function recipeOptions(mealType, selected){
+        var candidates = state.recipes.filter(function(r){ return (r.mealTypes||[]).indexOf(mealType)>-1 || (r.mealTypes||[]).indexOf("Outro")>-1; });
+        if(candidates.length===0) candidates = state.recipes;
+        candidates = candidates.slice().sort(function(a,b){
+          var ma=recipeMatch(a), mb=recipeMatch(b);
+          var sa = (ma.total>0 && ma.have===ma.total?2:0) + (recipeTouchesSoonItems(a)?1:0);
+          var sb = (mb.total>0 && mb.have===mb.total?2:0) + (recipeTouchesSoonItems(b)?1:0);
+          return sb-sa;
+        });
+        var opts = '<option value="">Escolher receita...</option>';
+        opts += candidates.map(function(r){
+          var m = recipeMatch(r);
+          var star = (m.total>0 && m.have===m.total) ? "⭐ " : "";
+          return '<option value="'+r.id+'" '+(r.id===selected?"selected":"")+'>'+star+esc(r.name)+'</option>';
+        }).join("");
+        return opts;
+      }
+      return '<div class="card day-card" data-day="'+iso+'">'+
+        '<div class="day-head"><span class="day-name">'+DAY_NAMES[idx]+'</span><span class="day-date">'+dateLabel+'</span></div>'+
+        '<div class="meal-toggle-row">'+
+          '<div class="meal-toggle '+(day.wantsLunch?"on":"")+'" data-toggle="lunch">Almoço em casa</div>'+
+          '<div class="meal-toggle '+(day.wantsDinner?"on":"")+'" data-toggle="dinner">Jantar em casa</div>'+
+        '</div>'+
+        (day.wantsLunch? '<div class="meal-select-wrap"><select class="recipe-select" data-meal-select="lunch">'+recipeOptions("Almoço", day.lunchRecipe)+'</select></div>' : '')+
+        (day.wantsDinner? '<div class="meal-select-wrap"><select class="recipe-select" data-meal-select="dinner">'+recipeOptions("Jantar", day.dinnerRecipe)+'</select></div>' : '')+
+        '</div>';
+    }).join("");
+    container.innerHTML = html;
+    container.querySelectorAll("[data-day]").forEach(function(card){
+      var iso = card.dataset.day;
+      if(!state.plan[iso]) state.plan[iso] = {wantsLunch:false, wantsDinner:false, lunchRecipe:null, dinnerRecipe:null};
+      card.querySelectorAll("[data-toggle]").forEach(function(t){
+        t.addEventListener("click", function(){
+          var key = t.dataset.toggle==="lunch"?"wantsLunch":"wantsDinner";
+          state.plan[iso][key] = !state.plan[iso][key];
+          scheduleSave(); renderPlan();
+        });
+      });
+      card.querySelectorAll("[data-meal-select]").forEach(function(sel){
+        sel.addEventListener("change", function(){
+          var key = sel.dataset.mealSelect==="lunch"?"lunchRecipe":"dinnerRecipe";
+          state.plan[iso][key] = sel.value || null;
+          scheduleSave();
+        });
+      });
+    });
+  }
+
+  /* ============ RENDER: COMPRAS ============ */
+  function computeNeededFromPlan(){
+    ensureWeek();
+    var dates = weekDates(state.weekStart);
+    var needed = {}; // lowercase name -> {name, recipes:Set}
+    dates.forEach(function(iso){
+      var day = state.plan[iso];
+      if(!day) return;
+      [day.lunchRecipe, day.dinnerRecipe].forEach(function(rid){
+        if(!rid) return;
+        var r = state.recipes.find(function(x){ return x.id===rid; });
+        if(!r) return;
+        (r.ingredients||[]).forEach(function(ing){
+          if(ingredientInStock(ing.name)) return;
+          var key = ing.name.trim().toLowerCase();
+          if(!needed[key]) needed[key] = {name: ing.name.trim(), recipes:[]};
+          if(needed[key].recipes.indexOf(r.name)===-1) needed[key].recipes.push(r.name);
+        });
+      });
+    });
+    return Object.keys(needed).map(function(k){ return needed[k]; });
+  }
+  function renderLowStockShopping(){
+    var container = document.getElementById("shoppingLowStock");
+    var low = lowStockItems();
+    if(low.length===0){ container.innerHTML=""; return; }
+    var html = '<div class="zone-heading">Stock baixo</div>' + low.map(function(it){
+      return '<div class="shop-item" data-lowstock="'+it.id+'">'+
+        '<div class="checkbox"></div>'+
+        '<div><div class="shop-name">'+esc(it.name)+'</div>'+
+        '<div class="shop-sub">Restam '+fmtAmount(it.amount)+' '+esc(it.unit||"")+' · alerta ≤ '+fmtAmount(it.minStock)+'</div></div>'+
+        '</div>';
+    }).join("");
+    container.innerHTML = html;
+    container.querySelectorAll("[data-lowstock]").forEach(function(el){
+      el.addEventListener("click", function(){ openRestockSheet(el.dataset.lowstock); });
+    });
+  }
+
+  function openRestockSheet(itemId){
+    var it = state.items.find(function(i){ return i.id===itemId; });
+    if(!it) return;
+    openSheet(
+      '<div class="sheet-head"><h3>'+esc(it.name)+'</h3><button class="sheet-close" id="sc">✕</button></div>'+
+      '<p class="hint" style="margin-top:0">Tens agora '+fmtAmount(it.amount)+' '+esc(it.unit||"")+'.</p>'+
+      '<label class="field-label">Quantas comprei?</label>'+
+      '<input type="number" id="restockQty" min="0" step="0.25" value="'+(it.minStock||1)+'">'+
+      '<div class="sheet-actions">'+
+        '<button class="btn btn-ghost" id="forgetBtn">Não comprar mais</button>'+
+        '<button class="btn btn-primary" id="restockBtn">Adicionar ao stock</button>'+
+      '</div>',
+      function(){
+        document.getElementById("sc").addEventListener("click", closeSheet);
+        document.getElementById("forgetBtn").addEventListener("click", function(){
+          it.ignoreLowStock = true;
+          scheduleSave(); closeSheet(); renderShopping(); renderAlertBadge();
+          toast("Não vais mais ver este item na lista");
+        });
+        document.getElementById("restockBtn").addEventListener("click", function(){
+          var qty = parseFloat(document.getElementById("restockQty").value);
+          if(!qty || qty<=0){ toast("Indica uma quantidade"); return; }
+          it.amount = it.amount + qty;
+          scheduleSave(); closeSheet(); renderShopping(); renderAlertBadge();
+          toast("Adicionado ao inventário");
+        });
+      }
+    );
+  }
+
+  function findInventoryItem(name){
+    var n = name.trim().toLowerCase();
+    return state.items.find(function(i){ return i.name.trim().toLowerCase()===n; }) || null;
+  }
+
+  function openPurchaseSheet(name, onConfirmed){
+    var existing = findInventoryItem(name);
+    var zoneOptions = state.zones.map(function(z){ return '<option value="'+esc(z)+'">'+esc(z)+'</option>'; }).join("");
+    openSheet(
+      '<div class="sheet-head"><h3>Comprei: '+esc(name)+'</h3><button class="sheet-close" id="sc">✕</button></div>'+
+      (existing ?
+        '<p class="hint" style="margin-top:0">Vai somar ao que já tens em '+esc(existing.zone)+' (agora: '+fmtAmount(existing.amount)+' '+esc(existing.unit||"")+').</p>' :
+        '<p class="hint" style="margin-top:0">Este item ainda não está no inventário — diz-me onde o vais guardar.</p>') +
+      '<label class="field-label">Quantidade comprada</label>'+
+      '<input type="number" id="pq_qty" min="0" step="0.25" value="1">'+
+      (existing ? '' :
+        '<label class="field-label">Zona</label>'+
+        '<select id="pq_zone">'+zoneOptions+'</select>'+
+        '<label class="field-label">Unidade (opcional)</label>'+
+        '<input type="text" id="pq_unit" placeholder="ex: rolo, unidades, kg">'
+      ) +
+      '<div class="sheet-actions"><button class="btn btn-primary btn-block" id="pq_confirm">Adicionar ao inventário</button></div>',
+      function(){
+        document.getElementById("sc").addEventListener("click", closeSheet);
+        document.getElementById("pq_confirm").addEventListener("click", function(){
+          var qty = parseFloat(document.getElementById("pq_qty").value);
+          if(!qty || qty<=0){ toast("Indica uma quantidade"); return; }
+          if(existing){
+            existing.amount = existing.amount + qty;
+          } else {
+            var zone = document.getElementById("pq_zone").value;
+            var unit = document.getElementById("pq_unit").value.trim();
+            state.items.push({
+              id: uid(), name: name.trim(), amount: qty, unit: unit, zone: zone,
+              expiry: null, alertDays: null, minStock: null, ignoreLowStock: false
+            });
+          }
+          scheduleSave();
+          closeSheet();
+          onConfirmed();
+        });
+      }
+    );
+  }
+
+  function renderShopping(){
+    renderLowStockShopping();
+    var fromPlan = computeNeededFromPlan();
+    var fp = document.getElementById("shoppingFromPlan");
+    if(fromPlan.length===0){
+      fp.innerHTML = '<div class="zone-heading">Do plano semanal</div><p class="hint" style="margin-top:0">Nada em falta do plano semanal (ou ainda não geraste o plano).</p>';
+    } else {
+      fp.innerHTML = '<div class="zone-heading">Do plano semanal</div>' + fromPlan.map(function(entry){
+        var key = entry.name.toLowerCase();
+        var checked = !!state.shoppingChecked[key];
+        return '<div class="shop-item '+(checked?"checked":"")+'" data-plankey="'+esc(key)+'">'+
+          '<div class="checkbox '+(checked?"checked":"")+'">'+(checked?'<svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>':'')+'</div>'+
+          '<div><div class="shop-name">'+esc(entry.name)+'</div><div class="shop-sub">'+esc(entry.recipes.join(", "))+'</div></div>'+
+          '</div>';
+      }).join("");
+      fp.querySelectorAll("[data-plankey]").forEach(function(el){
+        el.addEventListener("click", function(){
+          var key = el.dataset.plankey;
+          if(state.shoppingChecked[key]){
+            state.shoppingChecked[key] = false;
+            scheduleSave(); renderShopping();
+            return;
+          }
+          var entry = fromPlan.find(function(e){ return e.name.toLowerCase()===key; });
+          openPurchaseSheet(entry.name, function(){
+            state.shoppingChecked[key] = true;
+            scheduleSave(); renderShopping(); renderAlertBadge();
+            toast("Adicionado ao inventário");
+          });
+        });
+      });
+    }
+    var mp = document.getElementById("shoppingManual");
+    if(state.shoppingManual.length){
+      mp.innerHTML = '<div class="zone-heading">Outros itens</div>' + state.shoppingManual.map(function(m){
+        return '<div class="shop-item '+(m.checked?"checked":"")+'" data-manual="'+m.id+'">'+
+          '<div class="checkbox '+(m.checked?"checked":"")+'">'+(m.checked?'<svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>':'')+'</div>'+
+          '<div class="shop-name">'+esc(m.name)+'</div>'+
+          '</div>';
+      }).join("");
+      mp.querySelectorAll("[data-manual]").forEach(function(el){
+        el.addEventListener("click", function(){
+          var item = state.shoppingManual.find(function(m){ return m.id===el.dataset.manual; });
+          if(item.checked){
+            item.checked = false;
+            scheduleSave(); renderShopping();
+            return;
+          }
+          openPurchaseSheet(item.name, function(){
+            item.checked = true;
+            scheduleSave(); renderShopping(); renderAlertBadge();
+            toast("Adicionado ao inventário");
+          });
+        });
+      });
+    } else { mp.innerHTML = ""; }
+  }
+
+  document.getElementById("addManualBtn").addEventListener("click", function(){
+    var inp = document.getElementById("manualItemInput");
+    var v = inp.value.trim();
+    if(!v) return;
+    state.shoppingManual.push({id:uid(), name:v, checked:false});
+    inp.value="";
+    scheduleSave(); renderShopping();
+  });
+  document.getElementById("manualItemInput").addEventListener("keydown", function(e){
+    if(e.key==="Enter") document.getElementById("addManualBtn").click();
+  });
+  document.getElementById("clearCheckedBtn").addEventListener("click", function(){
+    state.shoppingManual = state.shoppingManual.filter(function(m){ return !m.checked; });
+    Object.keys(state.shoppingChecked).forEach(function(k){ if(state.shoppingChecked[k]) delete state.shoppingChecked[k]; });
+    scheduleSave(); renderShopping(); toast("Lista limpa");
+  });
+  document.getElementById("genShoppingBtn").addEventListener("click", function(){
+    switchView("compras");
+    toast("Lista atualizada a partir do plano");
+  });
+
+  /* ============ GLOBAL RENDER ============ */
+  function renderAll(){
+    renderAlertBadge();
+    if(currentView==="inventario"){ renderZoneChips(); renderInventory(); }
+    else if(currentView==="receitas"){ renderRecipes(); }
+    else if(currentView==="sugestoes"){ renderSuggestions(); }
+    else if(currentView==="plano"){ renderPlan(); }
+    else if(currentView==="compras"){ renderShopping(); }
+  }
+
+  /* ============ NAV WIRE ============ */
+  document.querySelectorAll(".navbtn").forEach(function(b){
+    b.addEventListener("click", function(){ switchView(b.dataset.view); });
+  });
+  document.getElementById("fabBtn").addEventListener("click", function(){
+    if(currentView==="inventario") openItemSheet(null);
+    else if(currentView==="receitas") openRecipeSheet(null);
+    else if(currentView==="compras") document.getElementById("manualItemInput").focus();
+  });
+  document.getElementById("bellBtn").addEventListener("click", function(){
+    switchView("inventario"); currentZoneFilter="Todos"; renderZoneChips(); renderInventory();
+  });
+
+  /* ============ INIT ============ */
+  load().then(function(){
+    ensureWeek();
+    switchView("inventario");
+  });
+
+})();
+</script>
+</body>
+</html>

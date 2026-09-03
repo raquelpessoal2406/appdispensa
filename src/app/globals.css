@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #fbf8f2;
+  --surface: #ffffff;
+  --surface-2: #f3efe4;
+  --ink: #24302a;
+  --ink-soft: #6b7570;
+  --primary: #2e4a38;
+  --primary-tint: #e4ece2;
+  --accent: #c98a2b;
+  --accent-tint: #f5e6c8;
+  --danger: #b84c3e;
+  --danger-tint: #f6deda;
+  --warn: #d9a62e;
+  --warn-tint: #fbefd3;
+  --line: #e7e1d3;
+  --radius: 14px;
+  --radius-sm: 10px;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-primary: var(--primary);
+  --color-primary-tint: var(--primary-tint);
+  --color-accent: var(--accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+  --color-warn: var(--warn);
+  --color-warn-tint: var(--warn-tint);
+  --color-line: var(--line);
+  --radius-md: var(--radius);
+  --radius-sm: var(--radius-sm);
+  --font-sans: var(--font-manrope);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-manrope), system-ui, -apple-system, sans-serif;
+}
